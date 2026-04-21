@@ -22,6 +22,8 @@ public class DiscoveryResource {
         Map<String, String> resources = new HashMap<>();
         resources.put("rooms", "/api/v1/rooms");
         resources.put("sensors", "/api/v1/sensors");
+        resources.put("createRoom", "POST /api/v1/rooms");
+        resources.put("createSensor", "POST /api/v1/sensors");
 
         response.put("resources", resources);
 
