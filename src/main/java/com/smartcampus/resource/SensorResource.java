@@ -4,6 +4,7 @@ import com.smartcampus.exception.LinkedResourceNotFoundException;
 import com.smartcampus.model.Room;
 import com.smartcampus.model.Sensor;
 import com.smartcampus.repository.DataStore;
+import com.smartcampus.util.ErrorResponse;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
@@ -34,9 +35,9 @@ public class SensorResource {
 
     @POST
     public Response createSensor(Sensor sensor, @Context UriInfo uriInfo) {
-        if (sensor.getId() == null || sensor.getId().isBlank()) {
+        if (sensor == null || sensor.getId() == null || sensor.getId().isBlank()) {
             return Response.status(Response.Status.BAD_REQUEST)
-                    .entity("Sensor id is required")
+                    .entity(new ErrorResponse(400, "Bad Request", "Sensor id is required"))
                     .build();
         }
 
@@ -59,7 +60,7 @@ public class SensorResource {
 
         if (sensor == null) {
             return Response.status(Response.Status.NOT_FOUND)
-                    .entity("Sensor not found")
+                    .entity(new ErrorResponse(404, "Not Found", "Sensor not found"))
                     .build();
         }
 

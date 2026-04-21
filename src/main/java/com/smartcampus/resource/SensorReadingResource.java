@@ -4,6 +4,7 @@ import com.smartcampus.exception.SensorUnavailableException;
 import com.smartcampus.model.Sensor;
 import com.smartcampus.model.SensorReading;
 import com.smartcampus.repository.DataStore;
+import com.smartcampus.util.ErrorResponse;
 import java.net.URI;
 import java.util.List;
 import java.util.UUID;
@@ -26,9 +27,10 @@ public class SensorReadingResource {
     @GET
     public Response getReadings() {
         Sensor sensor = DataStore.sensors.get(sensorId);
+
         if (sensor == null) {
             return Response.status(Response.Status.NOT_FOUND)
-                    .entity("Sensor not found")
+                    .entity(new ErrorResponse(404, "Not Found", "Sensor not found"))
                     .build();
         }
 
@@ -39,14 +41,21 @@ public class SensorReadingResource {
     @POST
     public Response addReading(SensorReading reading, @Context UriInfo uriInfo) {
         Sensor sensor = DataStore.sensors.get(sensorId);
+
         if (sensor == null) {
             return Response.status(Response.Status.NOT_FOUND)
-                    .entity("Sensor not found")
+                    .entity(new ErrorResponse(404, "Not Found", "Sensor not found"))
                     .build();
         }
 
         if ("MAINTENANCE".equalsIgnoreCase(sensor.getStatus())) {
             throw new SensorUnavailableException("Sensor is under maintenance and cannot accept new readings.");
+        }
+
+        if (reading == null) {
+            return Response.status(Response.Status.BAD_REQUEST)
+                    .entity(new ErrorResponse(400, "Bad Request", "Reading body is required"))
+                    .build();
         }
 
         if (reading.getId() == null || reading.getId().isBlank()) {
@@ -58,7 +67,6 @@ public class SensorReadingResource {
         }
 
         DataStore.getReadingsForSensor(sensorId).add(reading);
-
         sensor.setCurrentValue(reading.getValue());
 
         URI uri = uriInfo.getAbsolutePathBuilder().path(reading.getId()).build();

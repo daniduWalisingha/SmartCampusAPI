@@ -3,6 +3,7 @@ package com.smartcampus.resource;
 import com.smartcampus.exception.RoomNotEmptyException;
 import com.smartcampus.model.Room;
 import com.smartcampus.repository.DataStore;
+import com.smartcampus.util.ErrorResponse;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
@@ -24,10 +25,14 @@ public class RoomResource {
 
     @POST
     public Response createRoom(Room room, @Context UriInfo uriInfo) {
-        if (room.getId() == null || room.getId().isBlank()) {
+        if (room == null || room.getId() == null || room.getId().isBlank()) {
             return Response.status(Response.Status.BAD_REQUEST)
-                    .entity("Room id is required")
+                    .entity(new ErrorResponse(400, "Bad Request", "Room id is required"))
                     .build();
+        }
+
+        if (room.getSensorIds() == null) {
+            room.setSensorIds(new ArrayList<>());
         }
 
         DataStore.rooms.put(room.getId(), room);
@@ -43,7 +48,7 @@ public class RoomResource {
 
         if (room == null) {
             return Response.status(Response.Status.NOT_FOUND)
-                    .entity("Room not found")
+                    .entity(new ErrorResponse(404, "Not Found", "Room not found"))
                     .build();
         }
 
@@ -57,7 +62,7 @@ public class RoomResource {
 
         if (room == null) {
             return Response.status(Response.Status.NOT_FOUND)
-                    .entity("Room not found")
+                    .entity(new ErrorResponse(404, "Not Found", "Room not found"))
                     .build();
         }
 
@@ -66,6 +71,6 @@ public class RoomResource {
         }
 
         DataStore.rooms.remove(roomId);
-        return Response.ok().entity("Room deleted successfully").build();
+        return Response.ok(room).build();
     }
 }
